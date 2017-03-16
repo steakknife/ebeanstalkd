@@ -74,48 +74,35 @@ parse_job(Bin, Name) ->
     end.
 
 parse_body(Bin) ->
-    case find_next_token_length(Bin, ?BIN_END_LINE) of
-        {ok, Length, BodyRest} ->
-            BodyLength = binary_to_integer(binary:part(Bin, {0, Length})),
-            case BodyRest of
+    case binary:split(Bin, ?BIN_END_LINE) of
+        [H,T] ->
+            BodyLength = binary_to_integer(H),
+            case T of
                 <<Body:BodyLength/binary, ?STR_END_LINE, Rest/binary>> ->
                     {ok, Body, Rest};
                 _ ->
                     more
             end;
-        Other ->
-            Other
+        _ ->
+            more
     end.
 
 parse_string(Bin, Name) ->
-    case find_next_token_length(Bin, ?BIN_END_LINE) of
-        {ok, Length, Rest} ->
-            {ok, {Name, binary:part(Bin, {0, Length})}, Rest};
-        Other ->
-             Other
+    case binary:split(Bin, ?BIN_END_LINE) of
+        [H,T] ->
+            {ok, {Name, H}, T};
+        _ ->
+             more
     end.
 
 parse_int(Bin, Name) ->
     parse_int(Bin, Name, ?BIN_END_LINE).
 
 parse_int(Bin, Name, Delimiter) ->
-    case find_next_token_length(Bin, Delimiter) of
-        {ok, Length, Rest} ->
-            {ok, {Name, binary_to_integer(binary:part(Bin, {0, Length}))}, Rest};
-        Other ->
-            Other
-    end.
-
-find_next_token_length(Bin, Delimiter) ->
-    find_next_token_length(Delimiter, byte_size(Delimiter), Bin, 0).
-
-find_next_token_length(Delimiter, DelimiterLength, Bin, Acc) ->
-    case Bin of
-        <<Delimiter:DelimiterLength/binary, Rest/binary>> ->
-            {ok, Acc, Rest};
-        <<_C, Rest/bytes>> ->
-            find_next_token_length(Delimiter, DelimiterLength, Rest, Acc+1);
-        <<>> ->
+    case binary:split(Bin, Delimiter) of
+        [H,T] ->
+            {ok, {Name, binary_to_integer(H)}, T};
+        _ ->
             more
     end.
 
