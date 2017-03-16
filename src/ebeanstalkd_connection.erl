@@ -25,11 +25,11 @@
     {mode, binary},
     {packet, raw},
     {keepalive, true},
-    {nodelay, true},
-    {delay_send, false},
+    %{nodelay, true},
+    %{delay_send, false},
     %{recbuf, 32000},
     %{sndbuf, 32000},
-    {send_timeout, 10000},
+    {send_timeout, 5000},
     {send_timeout_close, true},
     {active, true}
 ]).
